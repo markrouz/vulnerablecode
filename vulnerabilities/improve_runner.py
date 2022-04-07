@@ -90,24 +90,26 @@ def process_inferences(inferences: List[Inference], advisory: Advisory, improver
                 if updated:
                     logger.info("Severity updated for reference {ref!r} to {severity.value!r}")
 
-        for pkg in inference.affected_purls:
-            vulnerable_package, _ = _get_or_create_package(pkg)
+        if inference.affected_purls:
+            for pkg in inference.affected_purls:
+                vulnerable_package, _ = _get_or_create_package(pkg)
+                models.PackageRelatedVulnerability(
+                    vulnerability=vuln,
+                    package=vulnerable_package,
+                    created_by=improver_name,
+                    confidence=inference.confidence,
+                    fix=False,
+                ).update_or_create()
+
+        if inference.fixed_purl:
+            fixed_package, _ = _get_or_create_package(inference.fixed_purl)
             models.PackageRelatedVulnerability(
                 vulnerability=vuln,
-                package=vulnerable_package,
+                package=fixed_package,
                 created_by=improver_name,
                 confidence=inference.confidence,
-                fix=False,
+                fix=True,
             ).update_or_create()
-
-        fixed_package, _ = _get_or_create_package(inference.fixed_purl)
-        models.PackageRelatedVulnerability(
-            vulnerability=vuln,
-            package=fixed_package,
-            created_by=improver_name,
-            confidence=inference.confidence,
-            fix=True,
-        ).update_or_create()
 
     advisory.date_improved = datetime.now(timezone.utc)
     advisory.save()
@@ -198,5 +200,6 @@ def get_or_create_vulnerability_and_aliases(vulnerability_id, alias_names, summa
     for alias_name in new_alias_names:
         alias = models.Alias(alias=alias_name, vulnerability=vulnerability)
         alias.save()
+        logger.info(f"New alias for {vulnerability!r}: {alias_name}")
 
     return vulnerability

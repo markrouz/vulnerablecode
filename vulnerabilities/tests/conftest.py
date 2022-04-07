@@ -34,7 +34,6 @@ def no_rmtree(monkeypatch):
 collect_ignore = [
     "test_models.py",
     "test_msr2019.py",
-    "test_alpine.py",
     "test_nginx.py",
     "test_apache_httpd.py",
     "test_npm.py",
@@ -57,7 +56,6 @@ collect_ignore = [
     "test_safety_db.py",
     "test_gentoo.py",
     "test_suse.py",
-    "test_github.py",
     "test_suse_backports.py",
     "test_suse_scores.py",
     "test_ubuntu.py",

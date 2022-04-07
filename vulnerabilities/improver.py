@@ -34,18 +34,18 @@ MAX_CONFIDENCE = 100
 @dataclasses.dataclass(order=True)
 class Inference:
     """
-    This data class expresses the contract between data improvers and the improve runner.
+    This data class expresses the contract between improvers and the improve runner.
 
     Only inferences with highest confidence for one vulnerability <-> package
     relationship is to be inserted into the database
     """
 
     vulnerability_id: str = None
-    aliases: List[str] = dataclasses.field(default_factory=list)
+    aliases: Optional[List[str]] = dataclasses.field(default_factory=list)
     confidence: int = MAX_CONFIDENCE
     summary: Optional[str] = None
-    affected_purls: List[PackageURL] = dataclasses.field(default_factory=list)
-    fixed_purl: PackageURL = dataclasses.field(default_factory=list)
+    affected_purls: Optional[List[PackageURL]] = dataclasses.field(default_factory=list)
+    fixed_purl: PackageURL = None
     references: List[Reference] = dataclasses.field(default_factory=list)
 
     def __post_init__(self):
@@ -62,16 +62,35 @@ class Inference:
         )
 
         versionless_purls = []
-        for purl in self.affected_purls + [self.fixed_purl]:
-            if not purl.version:
+        purls = []
+        if self.fixed_purl:
+            purls.append(self.fixed_purl)
+        if self.affected_purls:
+            purls.extend(self.affected_purls)
+        for purl in purls:
+            if purl and not purl.version:
                 versionless_purls.append(purl)
 
         assert (
             not versionless_purls
         ), f"Version-less purls are not supported in an Inference: {versionless_purls}"
 
+    def to_dict(self):
+        """
+        Return a dict representation of this Inference
+        """
+        return {
+            "vulnerability_id": self.vulnerability_id,
+            "aliases": [alias for alias in self.aliases],
+            "confidence": self.confidence,
+            "summary": self.summary,
+            "affected_purls": [affected_purl.to_dict() for affected_purl in self.affected_purls],
+            "fixed_purl": self.fixed_purl.to_dict(),
+            "references": [ref.to_dict() for ref in self.references],
+        }
+
     @classmethod
-    def from_advisory_data(cls, advisory_data, confidence, affected_purls, fixed_purl):
+    def from_advisory_data(cls, advisory_data, confidence, fixed_purl, affected_purls=None):
         """
         Return an Inference object while keeping the same values as of advisory_data
         for vulnerability_id, summary and references

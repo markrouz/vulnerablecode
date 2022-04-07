@@ -12,8 +12,10 @@
 # See https://github.com/nexB/vulnerablecode for support or download.
 # See https://aboutcode.org for more information about nexB OSS projectsfrom pathlib import Path
 
+from vulnerabilities.importers import alpine_linux
+from vulnerabilities.importers import github
 from vulnerabilities.importers import nginx
 
-IMPORTERS_REGISTRY = [nginx.NginxImporter]
+IMPORTERS_REGISTRY = [nginx.NginxImporter, alpine_linux.AlpineImporter, github.GitHubAPIImporter]
 
 IMPORTERS_REGISTRY = {x.qualified_name: x for x in IMPORTERS_REGISTRY}
