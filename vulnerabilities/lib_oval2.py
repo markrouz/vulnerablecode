@@ -30,26 +30,34 @@
 
 """Library to simplify working with the OVAL XML structure
 
-
 Authors: Gunnar Engelbach <Gunnar.Engelbach@ThreatGuard.com>
 
-
-
 Available classes:
-    - OvalDocument:    operations at the OVAL document level, such as reading in an existing OVAL document from
-file, creating a new one, finding or adding OVAL elements
-    - OvalElement:    the base class for OVAL elements.  Implements a few common methods inherited by the
-subclasses for definition, test, state, object, and variable
-    - OvalDefinition:    a type of OVAL element with certain attributes available.  Additional classes used by the OvalDefinition class:
-        - OvalMetadata:    the metadata associated with a definition, which includes the definition title and description.  Metadata also contains:
-            - OvalAffected:    The family and platforms affected by this definition
-            - OvalRepositoryInformation:    Additional information added by the OVAL repository
-    - OvalTest:    for working with OVAL test elements
-    - OvalObject:    for working with OVAL object elements
-    - OvalState:    for working with OVAL state elements
-    - OvalVariable:    for working with OVAL variable elements
 
+- OvalDocument:  operations at the OVAL document level, such as reading in
+    an existing OVAL document from file, creating a new one, finding or adding
+    OVAL elements
 
+- OvalElement: the base class for OVAL elements.  Implements a few common
+    methods inherited by the subclasses for definition, test, state, object, and
+    variable
+
+- OvalDefinition: a type of OVAL element with certain attributes available.
+    Additional classes used by the OvalDefinition class:
+
+    - OvalMetadata: the metadata associated with a definition, which
+        includes the definition title and description.  Metadata also
+        contains:
+
+        - OvalAffected: The family and platforms affected by this definition
+
+        - OvalRepositoryInformation: Additional information added by the
+            OVAL repository
+
+- OvalTest:    for working with OVAL test elements
+- OvalObject:    for working with OVAL object elements
+- OvalState:    for working with OVAL state elements
+- OvalVariable:    for working with OVAL variable elements
 
 Available exceptions:
     - None at this time
@@ -69,7 +77,8 @@ Available exceptions:
     >>> if element is not None:
     >>>    ....
 
-3. Read an XML file with a single OVAL Definition (error checking omitted for brevity):
+3. Read an XML file with a single OVAL Definition (error checking omitted for
+brevity):
 
     >>> tree = ElementTree()    
     >>> tree.parse('test-definition.xml')
@@ -84,14 +93,13 @@ Available exceptions:
     >>> tree.write("outfilename.xml", UTF-8", True)
         
 
-
-  
-
 TODO:
-    - Add exceptions that give more detail about why a value of None is sometimes returned
-    - Expand use of find() to allow for the possibility that the XML document is not using namespaces
-    - Lots of pydoc to be added
-    - Redo getter/setter for OvalRepository status elements.
+- Add exceptions that give more detail about why a value of None is
+  sometimes returned
+- Expand use of find() to allow for the possibility that the XML document is not
+  using namespaces
+- Lots of pydoc to be added
+- Redo getter/setter for OvalRepository status elements.
 """
 
 import datetime
@@ -105,8 +113,9 @@ from xml.etree.ElementTree import Element
 
 class OvalDocument(object):
     """
-    For working with OVAL documents.  That interaction will entail the use of the other classes.
-    Can be used to find certain elements within the document, update the document, and save the changes to a file
+    For working with OVAL documents.  That interaction will entail the use of
+    the other classes. Can be used to find certain elements within the document,
+    update the document, and save the changes to a file
     """
 
     # A time format to match what OVAL expects
@@ -116,14 +125,14 @@ class OvalDocument(object):
     NS_OVAL = {"oval": "http://oval.mitre.org/XMLSchema/oval-common-5"}
     NS_XSI = {"xsi": "http://www.w3.org/2001/XMLSchema-instance"}
 
-    #     xmlns:oval="http://oval.mitre.org/XMLSchema/oval-common-5"
-    #     xmlns:oval-def="http://oval.mitre.org/XMLSchema/oval-definitions-5"
-    #     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    #     xsi:schemaLocation="http://oval.mitre.org/XMLSchema/oval-definitions-5 oval-definitions-schema.xsd
-    #     http://oval.mitre.org/XMLSchema/oval-definitions-5#independent independent-definitions-schema.xsd
-    #     http://oval.mitre.org/XMLSchema/oval-definitions-5#solaris solaris-definitions-schema.xsd
-    #     http://oval.mitre.org/XMLSchema/oval-common-5 oval-common-schema.xsd
-    #     http://oval.mitre.org/XMLSchema/oval-definitions-5#unix unix-definitions-schema.xsd">^M
+    # xmlns:oval="http://oval.mitre.org/XMLSchema/oval-common-5"
+    # xmlns:oval-def="http://oval.mitre.org/XMLSchema/oval-definitions-5"
+    # xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    # xsi:schemaLocation="http://oval.mitre.org/XMLSchema/oval-definitions-5 oval-definitions-schema.xsd
+    # http://oval.mitre.org/XMLSchema/oval-definitions-5#independent independent-definitions-schema.xsd
+    # http://oval.mitre.org/XMLSchema/oval-definitions-5#solaris solaris-definitions-schema.xsd
+    # http://oval.mitre.org/XMLSchema/oval-common-5 oval-common-schema.xsd
+    # http://oval.mitre.org/XMLSchema/oval-definitions-5#unix unix-definitions-schema.xsd">
 
     @staticmethod
     def indent(elem, level=0):
@@ -143,9 +152,11 @@ class OvalDocument(object):
 
     @staticmethod
     def getOvalTimestamp(timestamp=None):
-        """Renders a datetime to a string formatted according to the OVAL specification.
-        if the timestamp argument is None (which it is by default) or is not of type datetime,
-        this function will return a string using the current datetime.
+        """
+        Renders a datetime to a string formatted according to the OVAL
+        specification. if the timestamp argument is None (which it is by
+        default) or is not of type datetime, this function will return a string
+        using the current datetime.
 
         @type timestamp: datetime
         @param timestamp: A datetime to be formatted as an OVAL timestamp, or None to use the current time.
@@ -188,7 +199,9 @@ class OvalDocument(object):
     def parseFromFile(self, filename):
         """
         Load an OVAL document from a filename and parse that into an ElementTree
-        Returns False if the filename is empty or there is an error parsing the XML document
+        Returns False if the filename is empty or there is an error parsing the
+        XML document
+
         @type filename: string
         @param filename: The path to the OVAL XML document to parse
 
@@ -269,14 +282,17 @@ class OvalDocument(object):
 
     def getGenerator(self, create=False):
         """
-        Gets the generator for this OVAL document as an OvalGenerator object.
-        If the generator element does not exist, the default behavior is to
-        return none.  However, setting the optional parameter to True will cause
-        a default generate element to be created, added to the document, and that will be returned.
-        A value of None may also be returned if this OvalDocument is empty
+        Gets the generator for this OVAL document as an OvalGenerator object. If
+        the generator element does not exist, the default behavior is to return
+        none.  However, setting the optional parameter to True will cause a
+        default generate element to be created, added to the document, and that
+        will be returned. A value of None may also be returned if this
+        OvalDocument is empty
 
         @rtype:    OvalGenerator
-        @return:    An OvalGenerator object, or None if it does not exist and create was not set to True
+
+        @return:    An OvalGenerator object, or None if it does not exist and
+                    create was not set to True
         """
         if not self.tree:
             return None
@@ -302,8 +318,9 @@ class OvalDocument(object):
 
     def getDefinitions(self):
         """
-        Returns a list of all definitions found in this OvalDocment where each item in the list is of type OvalDefinition
-        Returns None if no definitions could be found
+        Returns a list of all definitions found in this OvalDocment where each
+        item in the list is of type OvalDefinition Returns None if no
+        definitions could be found
 
         @rtype:    List
         @return:    All definitions in the OVAL document or None if none were found
@@ -325,8 +342,8 @@ class OvalDocument(object):
 
     def getTests(self):
         """
-        Returns a list of all tests in this OvalDocument where each list item is of type OvalTest
-        Returns None if no tests could be found
+        Returns a list of all tests in this OvalDocument where each list item is
+        of type OvalTest Returns None if no tests could be found
 
         @rtype:    List
         @return:    All tests in the OVAL document or None if none were found
@@ -371,8 +388,8 @@ class OvalDocument(object):
 
     def getStates(self):
         """
-        Returns a list of all states in this OvalDocument where each list item is of type OvalState
-        Returns None if no states could be found
+        Returns a list of all states in this OvalDocument where each list item
+        is of type OvalState Returns None if no states could be found
 
         @rtype:    List
         @return:    All states in the OVAL document or None if none were found
@@ -394,8 +411,8 @@ class OvalDocument(object):
 
     def getVariables(self):
         """
-        Returns a list of all variables in this OvalDocument where each list item is of type OvalVariable
-        Returns None if no variables could be found
+        Returns a list of all variables in this OvalDocument where each list
+        item is of type OvalVariable Returns None if no variables could be found
 
         @rtype:    List
         @return:    All variables in the OVAL document or None if none were found
@@ -417,13 +434,14 @@ class OvalDocument(object):
 
     def getElementByID(self, ovalid):
         """
-        Uses the ovalid argument to determine what type of element is being referenced and locate that element
-        in the OVAL ElementTree.
-        Returns an OvalElement of the appropriate class (OvalDefinition, OvalTest, ...)
-        or None if there is no ElementTree or if a matching item could not be found
+        Uses the ovalid argument to determine what type of element is being
+        referenced and locate that element in the OVAL ElementTree. Returns an
+        OvalElement of the appropriate class (OvalDefinition, OvalTest, ...) or
+        None if there is no ElementTree or if a matching item could not be found
 
-        @rtype:    OvalElement
-        @return:    The located element as the appropriate OvalElement subclass, or None if no matching element was found.
+        @rtype:  OvalElement
+        @return: The located element as the appropriate OvalElement subclass,
+                 or None if no matching element was found.
         """
         if not ovalid:
             return None
