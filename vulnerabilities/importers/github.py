@@ -21,6 +21,7 @@
 #  Visit https://github.com/nexB/vulnerablecode/ for support and download.
 
 import logging
+import traceback
 from datetime import datetime
 from typing import Iterable
 from typing import List
@@ -123,11 +124,11 @@ WEIRD_IGNORABLE_VERSIONS = frozenset(
 )
 
 PACKAGE_TYPE_BY_GITHUB_ECOSYSTEM = {
-    "MAVEN": "maven",
-    "NUGET": "nuget",
-    "COMPOSER": "composer",
-    "PIP": "pypi",
-    "RUBYGEMS": "gem",
+    # "MAVEN": "maven",
+    # "NUGET": "nuget",
+    # "COMPOSER": "composer",
+    # "PIP": "pypi",
+    # "RUBYGEMS": "gem",
     "GO": "golang",
 }
 
@@ -171,11 +172,11 @@ query{
 """
 
 VERSION_API_CLASSES = [
-    MavenVersionAPI,
-    NugetVersionAPI,
-    ComposerVersionAPI,
-    PypiVersionAPI,
-    RubyVersionAPI,
+    # MavenVersionAPI,
+    # NugetVersionAPI,
+    # ComposerVersionAPI,
+    # PypiVersionAPI,
+    # RubyVersionAPI,
     GoproxyVersionAPI,
 ]
 
@@ -501,19 +502,25 @@ def resolve_version_range(
     affected_versions = []
     unaffected_versions = []
     for package_version in package_versions or []:
-        if package_version in ignorable_versions:
-            continue
-        # Remove whitespace
-        package_version = package_version.replace(" ", "")
-        # Remove leading 'v'
-        package_version = package_version.lstrip("vV")
         try:
-            version = affected_version_range.version_class(package_version)
-        except Exception:
-            logger.error(f"Could not parse version {package_version!r}")
+            if package_version in ignorable_versions:
+                continue
+            # Remove whitespace
+            package_version = package_version.replace(" ", "")
+            # Remove leading 'v'
+            package_version = package_version.lstrip("vV")
+            try:
+                version = affected_version_range.version_class(package_version)
+            except Exception:
+                logger.error(f"Could not parse version {package_version!r}")
+                continue
+            if version in affected_version_range:
+                affected_versions.append(package_version)
+            else:
+                unaffected_versions.append(package_version)
+        except:
+            logger.error("exception during package_version resolving")
+            logger.info("problem object: " + package_version)
+            logger.error(traceback.format_exc())
             continue
-        if version in affected_version_range:
-            affected_versions.append(package_version)
-        else:
-            unaffected_versions.append(package_version)
     return affected_versions, unaffected_versions
